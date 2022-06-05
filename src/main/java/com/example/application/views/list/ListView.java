@@ -2,6 +2,7 @@ package com.example.application.views.list;
 
 
 import com.example.application.data.entity.Contact;
+import com.example.application.data.service.CrmService;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
@@ -12,19 +13,28 @@ import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 
-import java.util.Collections;
-
 
 @PageTitle("Contacts | Vaadin CRM")
 @Route(value = "")
 public class ListView extends VerticalLayout {
 
+    private Grid<Contact> grid = new Grid<Contact>(Contact.class);
+    private TextField filter = new TextField();
 
-    public ListView() {
+    private CrmService service;
+
+    public ListView(CrmService service) {
+        this.service = service;
         addClassName("list-view");
         setSizeFull();
 
         add(getToolbar(), getContent());
+
+        updateList();
+    }
+
+    private void updateList() {
+        grid.setItems(service.allContacts(filter.getValue()));
     }
 
     private Component getContent() {
@@ -42,18 +52,17 @@ public class ListView extends VerticalLayout {
     }
 
     private Component getForm() {
-        ContactForm form = new ContactForm(Collections.emptyList(), Collections.emptyList());
+        ContactForm form = new ContactForm(service.allCompanies(), service.allStatus());
         form.setWidth("25em");
 
         return form;
     }
 
     private Component getToolbar() {
-        TextField filter = new TextField();
-
         filter.setPlaceholder("Filter by name...");
         filter.setClearButtonVisible(true);
         filter.setValueChangeMode(ValueChangeMode.LAZY);
+        filter.addValueChangeListener(v -> updateList());
 
         Button addContactButton = new Button("Add Contact");
 
@@ -64,8 +73,6 @@ public class ListView extends VerticalLayout {
     }
 
     private Component getGrid() {
-        Grid<Contact> grid = new Grid<Contact>(Contact.class);
-
         grid.addClassName("contact-grid");
         grid.setSizeFull();
         grid.setColumns("firstName", "lastName", "email");
