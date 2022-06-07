@@ -3,6 +3,7 @@ package com.example.application.views.list;
 
 import com.example.application.data.entity.Contact;
 import com.example.application.data.service.CrmService;
+import com.example.application.views.MainLayout;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.button.Button;
@@ -16,7 +17,7 @@ import com.vaadin.flow.router.Route;
 
 
 @PageTitle("Contacts | Vaadin CRM")
-@Route(value = "")
+@Route(value = "", layout = MainLayout.class)
 public class ListView extends VerticalLayout {
 
     private Grid<Contact> grid = new Grid<Contact>(Contact.class);
@@ -73,7 +74,7 @@ public class ListView extends VerticalLayout {
 
         form.addListener(ContactForm.SaveEvent.class, this::saveContact);
         form.addListener(ContactForm.DeleteEvent.class, this::deleteContact);
-        form.addListener(ContactForm.CloseEvent.class, e-> closeForm());
+        form.addListener(ContactForm.CloseEvent.class, e -> closeForm());
 
         return form;
     }
@@ -120,7 +121,7 @@ public class ListView extends VerticalLayout {
         grid.getColumns().forEach(col -> col.setAutoWidth(true));
 
         grid.asSingleSelect().addValueChangeListener(e -> {
-            if(e.getValue() == null)
+            if (e.getValue() == null)
                 closeForm();
             else
                 openForm(e.getValue());
