@@ -20,6 +20,7 @@ public class ListView extends VerticalLayout {
 
     private Grid<Contact> grid = new Grid<Contact>(Contact.class);
     private TextField filter = new TextField();
+    private ContactForm form;
 
     private CrmService service;
 
@@ -31,6 +32,20 @@ public class ListView extends VerticalLayout {
         add(getToolbar(), getContent());
 
         updateList();
+
+        closeForm();
+    }
+
+    private void closeForm() {
+        form.setContact(null);
+        form.setVisible(false);
+        removeClassName("editing");
+    }
+
+    private void openForm(Contact contact) {
+        form.setContact(contact);
+        form.setVisible(true);
+        addClassName("editing");
     }
 
     private void updateList() {
@@ -52,7 +67,7 @@ public class ListView extends VerticalLayout {
     }
 
     private Component getForm() {
-        ContactForm form = new ContactForm(service.allCompanies(), service.allStatus());
+        form = new ContactForm(service.allCompanies(), service.allStatus());
         form.setWidth("25em");
 
         return form;
@@ -65,11 +80,17 @@ public class ListView extends VerticalLayout {
         filter.addValueChangeListener(v -> updateList());
 
         Button addContactButton = new Button("Add Contact");
+        addContactButton.addClickListener(c -> addContact());
 
         HorizontalLayout toolbar = new HorizontalLayout(filter, addContactButton);
         toolbar.addClassName("toolbar");
 
         return toolbar;
+    }
+
+    private void addContact() {
+        grid.asSingleSelect().clear();
+        openForm(new Contact());
     }
 
     private Component getGrid() {
@@ -80,6 +101,13 @@ public class ListView extends VerticalLayout {
         grid.addColumn(contact -> contact.getStatus().getName()).setHeader("Status");
         grid.addColumn(contact -> contact.getCompany().getName()).setHeader("Company");
         grid.getColumns().forEach(col -> col.setAutoWidth(true));
+
+        grid.asSingleSelect().addValueChangeListener(e -> {
+            if(e.getValue() == null)
+                closeForm();
+            else
+                openForm(e.getValue());
+        });
 
         return grid;
     }
